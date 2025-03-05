@@ -74,7 +74,7 @@ class OpenCTIService:
                         f"Fetched page of {stix_type}: {len(result.get('entities', []))} items "
                         f"(Total: {len(entities)})"
                     )
-                print("entities are :",entities)
+                # print("entities are :",entities)
                 data[stix_type] = entities
                 logger.info(f"Successfully fetched {len(entities)} {stix_type} records")
                 
