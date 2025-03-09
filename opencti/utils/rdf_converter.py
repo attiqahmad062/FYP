@@ -61,7 +61,7 @@ from rdflib import Graph, Namespace, URIRef, Literal, RDF, XSD
 from ..config.entities import STIX_ENTITIES
 
 STIX = Namespace("http://docs.oasis-open.org/cti/ns/stix#")
-STIX_REL = Namespace("http://docs.oasis-open.org/cti/ns/stix-relationship#")
+STIX_REL = Namespace("h  ttp://docs.oasis-open.org/cti/ns/stix-relationship#")
 
 def sanitize_text(text):
     """Clean text for RDF serialization"""
