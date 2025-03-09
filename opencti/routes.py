@@ -28,7 +28,7 @@ STIX="https://attack.mitre.org/ontologies/stix/2.1"
 def sync_opencti():
     try:
         data = cti_service.get_all_stix_data()
-        print("data is ",data)
+        # print("data is ",data)
         converter = STIXRDFConverter()
        
         # Batch processing

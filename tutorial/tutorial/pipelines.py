@@ -612,7 +612,6 @@ class MySQLPipeline:
         print(f"An error occurred while creating ProcedureExamples query: {e}")
         return ""
 
-
     def create_mitigations_query(self, item):
         def escape_string(value):
             if value is None:
