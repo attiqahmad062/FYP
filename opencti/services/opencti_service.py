@@ -4,7 +4,6 @@ import logging
 from ..config.entities import STIX_ENTITIES
 
 logger = logging.getLogger(__name__)
-
 class OpenCTIService:
     def __init__(self):
         self.client = OpenCTIApiClient(

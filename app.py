@@ -7,6 +7,8 @@ from flask_jwt_extended import JWTManager,create_access_token
 from dotenv import load_dotenv
 from opencti.routes import opencti_bp
 import os
+from flask_cors import CORS
+from collections import defaultdict
 # from tutorial.tutorial.spiders.mittreattack import mittreattack 
 ## dummy code
 # GraphDB connection settings
@@ -19,7 +21,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET")
 JWTManager(app)
-
+CORS(app) 
 # Register OpenCTI Blueprint
 app.register_blueprint(opencti_bp, url_prefix='/api/opencti')
 # crawler driver code
@@ -319,7 +321,7 @@ def get_softwares():
                   OPTIONAL { ?software ex:url ?url . }
         BIND(str(?software) AS ?softwareId)
     }
-    """
+    """ 
     try:
         # Initialize the RDF graph and parse the RDF data
         graph = Graph()
@@ -413,7 +415,224 @@ def get_detections():
         return jsonify({"status": "success", "data": detections})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+# @app.route('/all-entries', methods=['GET'])
+# def get_all_entries():
+#     """Retrieve all entries (groups, techniques, campaigns, mitigations, software, procedures, detections) in one request"""
+#     try:
+#         # Initialize the RDF graph and parse the RDF data
+#         graph = Graph()
+#         graph.parse(GRAPHDB_ENDPOINT, format="xml")
 
+#         # Unified SPARQL Query
+#         sparql_query = """
+#         PREFIX ex: <https://attack.mitre.org/>
+#         SELECT ?type ?entity ?name ?id ?description ?group ?use  ?firstSeen ?lastSeen ?techniques ?dataSource ?detects ?dataComponent
+#         WHERE {
+#             {
+#                 ?entity a ex:groups ;
+#                         ex:groupName ?name ;
+#                         ex:groupId ?id .
+#                 OPTIONAL { ?entity ex:description ?description . }
+#                 BIND("Group" AS ?type)
+#             }
+#             UNION
+#             {
+#                 ?entity a ex:techniques ;
+#                         ex:techniqueName ?name ;
+#                         ex:techniqueId ?id ;
+#                         ex:use ?use ;
+#                         ex:group_uses_techniques ?group .
+#                 OPTIONAL {
+#                     ?entity ex:referenceUrl ?ref .
+#                     ?ref ex:url ?urls .
+#                 }
+            
+#                 BIND("Technique" AS ?type)
+#             }
+#             UNION
+#             {
+#                 ?entity a ex:campaigns ;
+#                         ex:campaignName ?name ;
+#                         ex:campaignId ?id ;
+#                         ex:group_ispartof_campaigns ?group ;
+#                         ex:campaignsFirstseen ?firstSeen ;
+#                         ex:campaignsLastseen ?lastSeen .
+#                 BIND("Campaign" AS ?type)
+#             }
+#             UNION
+#             {
+#                 ?entity a ex:mitigations ;
+#                         ex:mitigationName ?name ;
+#                         ex:description ?description .
+#                 BIND("Mitigation" AS ?type)
+#                 BIND(str(?entity) AS ?id)
+#             }
+#             UNION
+#             {
+#                 ?entity a ex:softwares ;
+#                         ex:softwareName ?name ;
+#                         ex:softwareId ?id ;
+#                         ex:softwareTechniques ?techniques .
+#                 OPTIONAL { ?entity ex:url ?urls . }
+#                 BIND("Software" AS ?type)
+#             }
+#             UNION
+#             {
+#                 ?entity a ex:procedures ;
+#                         ex:procedureName ?name ;
+#                         ex:description ?description .
+#                 BIND("Procedure" AS ?type)
+#                 BIND(str(?entity) AS ?id)
+#             }
+#             UNION
+#             {
+#                 ?entity a ex:detections ;
+#                         ex:dataSource ?dataSource ;
+#                         ex:detects ?detects ;
+#                         ex:dataComponent ?dataComponent .
+#                 BIND("Detection" AS ?type)
+#                 BIND(str(?entity) AS ?id)
+#             }
+#         }
+        
+#         """
+
+#         # Execute SPARQL query
+#         results = graph.query(sparql_query)
+
+#         # Organize results by type
+#         entries = {
+#             "Groups": [],
+#             "Techniques": [],
+#             "Campaigns": [],
+#             "Mitigations": [],
+#             "Softwares": [],
+#             "Procedures": [],
+#             "Detections": []
+#         }
+
+#         for row in results:
+#             entry = {
+#                 "name": str(row.name),
+#                 "id": str(row.id),
+#                 "description": str(row.description) if row.description else None,
+#                 "group": str(row.group) if row.group else None,
+#                 "use": str(row.use) if row.use else None,
+#                 "urls": str(row.urls) if row.urls else None,
+#                 "body": str(row.body) if row.body else None,
+#                 "firstSeen": str(row.firstSeen) if row.firstSeen else None,
+#                 "lastSeen": str(row.lastSeen) if row.lastSeen else None,
+#                 "techniques": str(row.techniques) if row.techniques else None,
+#                 "dataSource": str(row.dataSource) if row.dataSource else None,
+#                 "detects": str(row.detects) if row.detects else None,
+#                 "dataComponent": str(row.dataComponent) if row.dataComponent else None
+#             }
+
+#             if str(row.type) == "Group":
+#                 entries["Groups"].append(entry)
+#             elif str(row.type) == "Technique":
+#                 entries["Techniques"].append(entry)
+#             elif str(row.type) == "Campaign":
+#                 entries["Campaigns"].append(entry)
+#             elif str(row.type) == "Mitigation":
+#                 entries["Mitigations"].append(entry)
+#             elif str(row.type) == "Software":
+#                 entries["Softwares"].append(entry)
+#             elif str(row.type) == "Procedure":
+#                 entries["Procedures"].append(entry)
+#             elif str(row.type) == "Detection":
+#                 entries["Detections"].append(entry)
+
+#         # Return JSON Response
+#         return jsonify({"status": "success", "data": entries})
+
+#     except Exception as e:
+#         return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/all-entries', methods=['GET'])
+def get_combined_entries():
+    """Retrieve and combine groups and techniques from separate queries"""
+    try:
+        graph = Graph()
+        graph.parse(GRAPHDB_ENDPOINT, format="xml")
+
+        # Query 1: Get all groups
+        groups_query = """
+        PREFIX ex: <https://attack.mitre.org/>
+        SELECT ?groupId ?groupName ?description 
+        
+        WHERE {
+            ?group a ex:groups ;
+                   ex:groupId ?groupId ;
+                   ex:groupName ?groupName .
+            
+            OPTIONAL { ?group ex:alias ?alias }
+            OPTIONAL { ?group ex:associatedGroups ?associatedGroup }
+            OPTIONAL { ?group ex:description ?description }
+            OPTIONAL { ?group ex:date ?date }
+        }
+        GROUP BY ?group ?groupId ?groupName ?description
+        """
+
+        # Query 2: Get all techniques
+        techniques_query = """
+        PREFIX ex: <https://attack.mitre.org/>
+        SELECT ?techniqueId ?techniqueName 
+               (GROUP_CONCAT(DISTINCT ?use; separator="|") AS ?uses)
+               (GROUP_CONCAT(DISTINCT ?group; separator="|") AS ?groups)
+               (GROUP_CONCAT(DISTINCT ?url; separator="|") AS ?urls)
+        WHERE {
+            ?tech a ex:techniques ;
+                   ex:techniqueId ?techniqueId ;
+                   ex:techniqueName ?techniqueName .
+            
+            
+            OPTIONAL { ?tech ex:group_uses_techniques ?group }
+        
+        }
+        GROUP BY ?tech ?techniqueId ?techniqueName
+        """
+
+        # Execute both queries
+        groups_results = graph.query(groups_query)
+        techniques_results = graph.query(techniques_query)
+
+        # Process groups
+        groups = []
+        for row in groups_results:
+            groups.append({
+                "id": str(row.groupId),
+                "name": str(row.groupName),
+                "description": str(row.description) if row.description else None,
+                "aliases": row.aliases.split("|") if row.aliases else [],
+                "associated_groups": row.associatedGroups.split("|") if row.associatedGroups else [],
+                "dates": row.dates.split("|") if row.dates else []
+            })
+
+        # Process techniques
+        techniques = []
+        for row in techniques_results:
+            techniques.append({
+                "id": str(row.techniqueId),
+                "name": str(row.techniqueName),
+                "uses": row.uses.split("|") if row.uses else [],
+                "groups": row.groups.split("|") if row.groups else [],
+                "reference_urls": row.urls.split("|") if row.urls else []
+            })
+
+        return jsonify({
+            "status": "success",
+            "data": {
+                "groups": groups,
+                "techniques": techniques
+            },
+            "counts": {
+                "groups": len(groups),
+                "techniques": len(techniques)
+            }
+        })
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 if __name__ == '__main__':
     app.run(debug=True,port=5001)
 

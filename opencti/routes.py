@@ -12,8 +12,8 @@ import logging
 import os
 logger = logging.getLogger(__name__)
 opencti_bp = Blueprint('opencti', __name__)
-cti_service = OpenCTIService()
-graphdb = GraphDBService()
+# cti_service = OpenCTIService()
+# graphdb = GraphDBService()
 STIX="https://attack.mitre.org/ontologies/stix/2.1"
 # @opencti_bp.route('/sync', methods=['POST'])
 # @jwt_required()

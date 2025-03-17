@@ -213,6 +213,8 @@ class MySQLPipeline:
         return item
     def execute_sparql(self, query):
         try:
+            # query = query.strip()  # Remove leading/trailing whitespace
+            query = query.encode('utf-8')  # Encode as UTF-8 (if required by SPARQLWrapper)
             self.sparql.setQuery(query)
             self.sparql.setMethod(POST)
             self.sparql.setRequestMethod(URLENCODED)
@@ -297,7 +299,7 @@ class MySQLPipeline:
         if not technique_id:
             raise ValueError("Technique ID is missing or empty")
 
-        refs = self.create_references(item.get('References'), technique_id, 'technique')
+        # refs = self.create_references(item.get('References'), technique_id, 'technique')
         
         technique_id = escape_string(technique_id)
         technique_name = escape_string(item.get('Name'))
@@ -322,24 +324,24 @@ class MySQLPipeline:
                 FILTER(NOT EXISTS {{ ex:{technique_id} ex:subId ?subId }})
             }};
             """
-        insert_new = f"""
-    INSERT {{
-        ex:{technique_id} a ex:techniques ;
-        ex:domain "{domain}" ;
-        ex:subId "{sub_id}" ;
-        ex:techniqueName "{technique_name}" ;
-        ex:techniqueId "{technique_id}" ;
-        ex:group_uses_techniques "{group_id}" .
-        ex:{technique_id} ex:use "{use}" .
+#         insert_new = f"""
+#     INSERT {{
+#         ex:{technique_id} a ex:techniques ;
+#         ex:domain "{domain}" ;
+#         ex:subId "{sub_id}" ;
+#         ex:techniqueName "{technique_name}" ;
+#         ex:techniqueId "{technique_id}" ;
+#         ex:group_uses_techniques "{group_id}" .
+#         ex:{technique_id} ex:use "{use}" .
 
-    }}
-    WHERE {{
-        FILTER NOT EXISTS {{
-            ex:{technique_id} ex:group_uses_techniques "{group_id}" .
+#     }}
+#     WHERE {{
+#         FILTER NOT EXISTS {{
+#             ex:{technique_id} ex:group_uses_techniques "{group_id}" .
           
-        }}
-    }}
-"""  
+#         }}
+#     }}
+# """  
 
   
 
@@ -385,10 +387,45 @@ class MySQLPipeline:
         # return f"""
         # PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>
       
-        # {insert_new}
+        
         # """
-                return f"""
+        # insert_new = f"""
+        #     PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>
+
+        #     INSERT {{
+        #         ex:{technique_id} a ex:techniques ;
+        #         ex:domain "{domain}" ;
+        #         ex:subId "{sub_id}" ;
+        #         ex:techniqueName "{technique_name}" ;
+        #         ex:techniqueId "{technique_id}" ;
+        #         ex:group_uses_techniques "{group_id}" .
+        #         ex:{technique_id} ex:use "{use}" .
+        #     }}
+        #     WHERE {{
+        #         FILTER NOT EXISTS {{
+        #             ex:{technique_id} ex:group_uses_techniques "{group_id}" .
+        #         }}
+        #     }}
+        # """
+        # insert_new = insert_new.encode('utf-8')
       
+        return f"""
+            PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>
+
+            INSERT {{
+                ex:{technique_id} a ex:techniques ;
+                ex:domain "{domain}" ;
+                ex:subId "{sub_id}" ;
+                ex:techniqueName "{technique_name}" ;
+                ex:techniqueId "{technique_id}" ;
+                ex:group_uses_techniques "{group_id}" .
+                ex:{technique_id} ex:use "{use}" .
+            }}
+            WHERE {{
+                FILTER NOT EXISTS {{
+                    ex:{technique_id} ex:group_uses_techniques "{group_id}" .
+                }}
+            }}
         """
      except Exception as e:
         print(f"An error occurred while creating TechniquesTable query: {e}")

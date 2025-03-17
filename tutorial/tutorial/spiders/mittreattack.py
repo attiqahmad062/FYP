@@ -97,13 +97,13 @@ class MITREAttackSpider(scrapy.Spider):
             # Creating an absolute URL
             column1_url_absolute = response.urljoin(column1_url.strip()) if column1_url else None
             # Extracting data from the table with class name 'grouptable'
-            # yield GroupTable ({
-            #     'MittreName': column1_data.strip() if column1_data else None,
-            #     'Url': column1_url_absolute,
-            #     'GroupName': column2_data.strip() if column2_data else None,
-            #     'AssociatedGroups': column3_data.strip() if column3_data else None,
-            #     'Summary': column4_data.strip() if column4_data else None,
-            #     })
+            yield GroupTable ({
+                'MittreName': column1_data.strip() if column1_data else None,
+                'Url': column1_url_absolute,
+                'GroupName': column2_data.strip() if column2_data else None,
+                'AssociatedGroups': column3_data.strip() if column3_data else None,
+                'Summary': column4_data.strip() if column4_data else None,
+                })
 
 #             # Follow the URL to the group's page and parse the table data
             if column1_url_absolute:
@@ -181,7 +181,7 @@ class MITREAttackSpider(scrapy.Spider):
                 'TID': id_data.strip() if id_data else None,
                 'SubId': sub_id_data.strip() if sub_id_data else None,
                 'Use': use_data if use_data else None,
-                "References": references
+                # "References": references
             })
             # if technique_url:
             #     yield response.follow(technique_url, self.parse_techniques)
@@ -199,26 +199,26 @@ class MITREAttackSpider(scrapy.Spider):
             for node in techniques_nodes:
                 techniques_data.append(node.strip())
             # Check if ID starts with 'S'
-            # if id_data and id_data.startswith('S') and id_data[1:].isdigit():
-                # yield SoftwareTable( {
-                #     'GroupId':id_.strip() if id_data else None,
-                #     'SID': id_data if id_data else None,
-                #     'Name': name_data if name_data else None,
-                #     'References': references_data if references_data else None,
-                #     'Techniques': ' '.join(techniques_data) if techniques_data else None,
-                # } )
+            if id_data and id_data.startswith('S') and id_data[1:].isdigit():
+                yield SoftwareTable( {
+                    'GroupId':id_.strip() if id_data else None,
+                    'SID': id_data if id_data else None,
+                    'Name': name_data if name_data else None,
+                    'References': references_data if references_data else None,
+                    'Techniques': ' '.join(techniques_data) if techniques_data else None,
+                } )
 #         # campaigns   
-        # if response.css('h2#campaigns'):
-        #     for row in response.xpath('//*[@id="v-attckmatrix"]/div[2]/div/div/div/div[3]'):
-        #         yield  CampaignsTable({
-        #             'GroupId':id_.strip() if id_data else None,
-        #             'ID': row.css('td:nth-child(1) a::text').get(),
-        #             'Name': row.css('td:nth-child(2) a::text').get(),
-        #             'FirstSeen': row.css('td:nth-child(3) *::text').get(),
-        #             'LastSeen': row.css('td:nth-child(4) *::text').get(),
-        #             'References': row.css('td:nth-child(5)  p sup a::attr(href)').get(),
-        #              'Techniques': row.css('td:nth-child(6) a::attr(href)').getall(),
-        #         })
+        if response.css('h2#campaigns'):
+            for row in response.xpath('//*[@id="v-attckmatrix"]/div[2]/div/div/div/div[3]'):
+                yield  CampaignsTable({
+                    'GroupId':id_.strip() if id_data else None,
+                    'ID': row.css('td:nth-child(1) a::text').get(),
+                    'Name': row.css('td:nth-child(2) a::text').get(),
+                    'FirstSeen': row.css('td:nth-child(3) *::text').get(),
+                    'LastSeen': row.css('td:nth-child(4) *::text').get(),
+                    'References': row.css('td:nth-child(5)  p sup a::attr(href)').get(),
+                     'Techniques': row.css('td:nth-child(6) a::attr(href)').getall(),
+                })
 # #         #associated groups (aliasDescription)
 #         if response.css('h2#aliasDescription'):
 #             for row in response.xpath('//*[@id="v-attckmatrix"]/div[2]/div/div/div/div[2]/table/tbody/tr'):
@@ -366,14 +366,14 @@ class MITREAttackSpider(scrapy.Spider):
                 references_string = ' '.join(references)
                 mitigation_url = row.css('td:nth-child(2) a::attr(href)').get()
                 # technique_url=response.urljoin(technique_url.strip()) if technique_url else None
-                # if id.__contains__('M'):        
-                #    yield Mitigations({
-                #     'MID': id,
-                #      'TechniqueId':id_,
-                #     'Mitigation': mitigation,
-                #     'Description': description,
-                #    "References": references_string
-                # })
+                if id.__contains__('M'):        
+                   yield Mitigations({
+                    'MID': id,
+                     'TechniqueId':id_,
+                    'Mitigation': mitigation,
+                    'Description': description,
+                   "References": references_string
+                })
 # #         #detections 
         # if response.css('h2#detection'):
         #      rows = response.css('table.table.datasources-table.table-bordered tbody tr')
