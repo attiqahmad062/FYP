@@ -326,13 +326,13 @@ class MITREAttackSpider(scrapy.Spider):
                                 if href not in references:
                                     references.append(href)
                         references_string = ' '.join(references)
-                        yield ProcedureExamples( {
-                            'TechniqueId':id_,
-                            'PID': id,
-                            'Name': name,
-                            'Description': description,
-                            "References": references_string
-                    })
+                    #     yield ProcedureExamples( {
+                    #         'TechniqueId':id_,
+                    #         'PID': id,
+                    #         'Name': name,
+                    #         'Description': description,
+                    #         "References": references_string
+                    # })
 # #         #mitigations
         # if response.css('h2#mitigations'):
         #     rows = response.xpath('//*[@id="v-attckmatrix"]/div[2]/div/div/div/div[3]/table')

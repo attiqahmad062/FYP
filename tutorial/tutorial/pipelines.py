@@ -474,7 +474,7 @@ class MySQLPipeline:
         try:
             #  ex:techniques "{item.get('Techniques')}" .
             software_id = item.get('SID')
-            refs = self.create_references(item.get('References'), software_id, 'software')
+            # refs = self.create_references(item.get('References'), software_id, 'software')
             return f"""
             PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>
             INSERT DATA {{
@@ -483,7 +483,7 @@ class MySQLPipeline:
                     ex:softwareTechniques "{item.get('Techniques')}" ;
                     ex:group_uses_software "{item.get('GroupId')}";
                     ex:softwareId "{software_id}" .
-                {refs}
+                
             }}  
             """
         except Exception as e:
@@ -712,7 +712,7 @@ class MySQLPipeline:
                 ex:{mtigation_uri} a ex:mitigations ;
                     ex:mitigationName "{item.get('Mitigation')}" ;   
                     ex:description "{description}" ;
-                    ex:technique_implements_mitigations "{item.get("TechniqueId")}" 
+                    ex:technique_implements_mitigations "{item.get("TechniqueId")}" .
             }}
             """
         except Exception as e:
@@ -767,7 +767,7 @@ class MySQLPipeline:
             # Print extracted technique entities for debugging
             print(f"Extracted Procedure Entities: {detection_entities}")
             # Store the extracted entities into GraphDB via SPARQL queries
-            self.store_detection_entities(detection_id, detection_entities)
+            # self.store_detection_entities(detection_id, detection_entities)
             detection_uri = f"<https://attack.mitre.org/detections/{detection_id}>"
             return f""" 
             PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>
@@ -777,8 +777,8 @@ class MySQLPipeline:
                     ex:dataSource "{item.get('DataSource')}" ;
                     ex:detects "{detects}" ;
                     ex:dataComponent "{item.get('DataComponent')}" ;
-                    ex:technique_implements_detections"{item.get("TechniqueId")}";
-                    {refs} .
+                    ex:technique_implements_detections"{item.get("TechniqueId")}"
+                    
             }}
             """
         except Exception as e:
