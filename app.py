@@ -133,11 +133,9 @@ def get_groups():
         WHERE {
             ?groupName a ex:groups ;
                        ex:groupId ?groupId .
-            OPTIONAL { ?groupName ex:use ?description . }
-           
+            OPTIONAL { ?groupName ex:use ?description . }  
         }
         """
-
         # Run the Query
         results = graph.query(query)
 
@@ -554,12 +552,10 @@ def get_combined_entries():
     try:
         graph = Graph()
         graph.parse(GRAPHDB_ENDPOINT, format="xml")
-
         # Query 1: Get all groups
         groups_query = """
         PREFIX ex: <https://attack.mitre.org/>
-        SELECT ?groupId ?groupName ?description 
-        
+        SELECT ?groupId ?groupName 
         WHERE {
             ?group a ex:groups ;
                    ex:groupId ?groupId ;
@@ -570,28 +566,23 @@ def get_combined_entries():
             OPTIONAL { ?group ex:description ?description }
             OPTIONAL { ?group ex:date ?date }
         }
-        GROUP BY ?group ?groupId ?groupName ?description
+        GROUP BY ?group ?groupId ?groupName
+        limit 10 
         """
 
         # Query 2: Get all techniques
         techniques_query = """
-        PREFIX ex: <https://attack.mitre.org/>
-        SELECT ?techniqueId ?techniqueName 
-               (GROUP_CONCAT(DISTINCT ?use; separator="|") AS ?uses)
-               (GROUP_CONCAT(DISTINCT ?group; separator="|") AS ?groups)
-               (GROUP_CONCAT(DISTINCT ?url; separator="|") AS ?urls)
+        PREFIX ex: <https://attack.mitre.org/> 
+        SELECT ?techniqueId ?groups
         WHERE {
-            ?tech a ex:techniques ;
-                   ex:techniqueId ?techniqueId ;
-                   ex:techniqueName ?techniqueName .
-            
-            
-            OPTIONAL { ?tech ex:group_uses_techniques ?group }
-        
+            ?technique a ex:techniques ;   
+                    ex:group_uses_techniques ?groups;
+           
+            BIND(str(?technique) AS ?techniqueId)
         }
-        GROUP BY ?tech ?techniqueId ?techniqueName
+        GROUP BY ?techniqueId   ?groups
+        limit 12 
         """
-
         # Execute both queries
         groups_results = graph.query(groups_query)
         techniques_results = graph.query(techniques_query)
@@ -602,10 +593,10 @@ def get_combined_entries():
             groups.append({
                 "id": str(row.groupId),
                 "name": str(row.groupName),
-                "description": str(row.description) if row.description else None,
-                "aliases": row.aliases.split("|") if row.aliases else [],
-                "associated_groups": row.associatedGroups.split("|") if row.associatedGroups else [],
-                "dates": row.dates.split("|") if row.dates else []
+                # "description": str(row.description) if row.description else None,
+                # "aliases": row.aliases.split("|") if row.aliases else [],
+                # "associated_groups": row.associatedGroups.split("|") if row.associatedGroups else [],
+                # "dates": row.dates.split("|") if row.dates else []
             })
 
         # Process techniques
@@ -613,10 +604,9 @@ def get_combined_entries():
         for row in techniques_results:
             techniques.append({
                 "id": str(row.techniqueId),
-                "name": str(row.techniqueName),
-                "uses": row.uses.split("|") if row.uses else [],
+                # "name": str(row.techniqueName),
+                # "uses": row.uses.split("|") if row.uses else [],
                 "groups": row.groups.split("|") if row.groups else [],
-                "reference_urls": row.urls.split("|") if row.urls else []
             })
 
         return jsonify({

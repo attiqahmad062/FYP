@@ -519,7 +519,7 @@ class MySQLPipeline:
             last_seen = format_date(escape_string(item.get('LastSeen')))
             techniques = item.get('Techniques')
             
-            refs = self.create_references(item.get('References'), campaign_id, 'campaign')
+            # refs = self.create_references(item.get('References'), campaign_id, 'campaign')
 
             techniques_triples = ""
             if techniques:
@@ -537,7 +537,7 @@ class MySQLPipeline:
                     ex:campaignsFirstseen "{first_seen}"^^xsd:date ;
                     ex:campaignsLastseen "{last_seen}"^^xsd:date .
                     {techniques_triples}
-                    {refs}
+                   
             }}
             """
         except Exception as e:
@@ -595,7 +595,7 @@ class MySQLPipeline:
             raise ValueError("Technique ID is missing or empty")
         name = escape_string(item.get('Name'))
         description = escape_string(item.get('Description'))
-        refs = self.create_references(item.get('References'), procedure_id, 'procedure')
+        # refs = self.create_references(item.get('References'), procedure_id, 'procedure')
         doc = self.nlp(description)
 
         # Store extracted entities from both models
@@ -641,8 +641,8 @@ class MySQLPipeline:
             {procedure_uri} a ex:procedures ;
                 ex:procedureName  "{name}" ;
                 ex:technique_implements_procedures "{item.get("TechniqueId")}";
-                ex:description "{description}" .
-            {refs}
+                ex:description "{description}" 
+            
         }}
         """
      except Exception as e:
@@ -659,7 +659,7 @@ class MySQLPipeline:
             if not mitigation_id :
              raise ValueError("Technique ID is missing or empty") 
             description = escape_string(item.get('Description'))
-            refs = self.create_references(item.get('References'), mitigation_id, 'mitigation')
+            # refs = self.create_references(item.get('References'), mitigation_id, 'mitigation')
            
             # Sample text to test
             # Process the text
@@ -712,8 +712,7 @@ class MySQLPipeline:
                 ex:{mtigation_uri} a ex:mitigations ;
                     ex:mitigationName "{item.get('Mitigation')}" ;   
                     ex:description "{description}" ;
-                    ex:technique_implements_mitigations "{item.get("TechniqueId")}".
-                      {refs}
+                    ex:technique_implements_mitigations "{item.get("TechniqueId")}" 
             }}
             """
         except Exception as e:
@@ -836,7 +835,6 @@ class MySQLPipeline:
                         if body:
                             body = re.sub(r'["\\]', r'\\\g<0>', body)  # Escape quotes and backslashes
                             body = re.sub(r'[\n\r\t]', ' ', body)  # Remove newlines, tabs
- 
                         # Construct SPARQL query
                         print("Program resumes after 10 seconds")
                        
@@ -1090,7 +1088,6 @@ class MySQLPipeline:
     def store_procedure_entities(self, procedure_id, procedure_entities):
         print("Storing procedure entities for ID:", procedure_id)
         procedure_uri = f"<https://attack.mitre.org/procedures/{procedure_id}>"
-        
         # Store ORG entities
         if procedure_entities.get("ORG"):
             # for org in procedure_entities["ORG"]:
@@ -1105,7 +1102,6 @@ class MySQLPipeline:
                 self.sparql.setQuery(org_query)
                 self.sparql.setMethod('POST' )
                 self.sparql.query()
-
         # Store Malware entities
         if procedure_entities.get("Malware"):
             # for malware in procedure_entities["Malware"]:
@@ -1120,7 +1116,6 @@ class MySQLPipeline:
                 self.sparql.setQuery(malware_query)
                 self.sparql.setMethod('POST')
                 self.sparql.query()
-
         # Store Tools entities
         if procedure_entities.get("Tools"):
             # for tool in procedure_entities["Tools"]:
@@ -1131,7 +1126,6 @@ class MySQLPipeline:
              DELETE {{ {procedure_uri} ex:tool ?oldCountry }}
                 INSERT  {{
                     {procedure_uri} ex:tool {tool_literal}  
-
                 }}
               WHERE {{ {procedure_uri} ex:description ?desc }} 
                 """
@@ -1143,7 +1137,6 @@ class MySQLPipeline:
                     print("Tool stored successfully.")
                 except Exception as e:
                     print("Error executing SPARQL query:", e)
- 
 # Store Detections  in Graph DB
     def store_detection_entities(self, detection_id, detection_entities):
         print("Storing procedure entities for ID:", detection_id)

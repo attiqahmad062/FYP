@@ -135,7 +135,6 @@ def get_entities(entity_type):
                 "total_pages": math.ceil(total / per_page)
             }
         }), 200
-        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 # # ope cti for import
