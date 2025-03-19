@@ -583,6 +583,46 @@ def get_combined_entries():
         GROUP BY ?techniqueId   ?groups
         limit 12 
         """
+        # Query 3: Get all detections
+        detections_query = """
+        PREFIX ex: <https://attack.mitre.org/> 
+        SELECT    *
+        WHERE {
+            ?detection a ex:detections ;
+            ex:dataSource ?dataSource ;
+        #     ex:detects ?detects ;
+            ex:dataComponent ?dataComponent ;
+            
+            BIND(str(?detection) AS ?detectionId)
+        }
+        """
+        # Query 4: Get all procedures 
+        procedures_query = """
+        PREFIX ex: <https://attack.mitre.org/> 
+        SELECT    *
+        WHERE {
+            ?procedure a ex:procedures ;
+
+                        ex:procedureName  ?procedureName;
+                        ex:description ?description .
+        }
+        """
+        # Query 4: Get all softwares 
+        softwares_query = """
+        PREFIX ex: <https://attack.mitre.org/>
+        SELECT  ?software ?softwareName ?softwareTechniques ?softwareId ?group
+        WHERE {
+            ?software a ex:softwares ;
+            ex:softwareId ?softwareId ;
+                        ex:softwareName ?softwareName ;
+                            ex:softwareTechniques ?softwareTechniques ;
+            ex:group_uses_software ?group
+            OPTIONAL { ?software ex:url ?url .
+            }
+        #    BIND(str(?software) AS ?softwareId)
+        } 
+
+        """
         # Execute both queries
         groups_results = graph.query(groups_query)
         techniques_results = graph.query(techniques_query)

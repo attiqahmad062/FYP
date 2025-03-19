@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
-
 const ForceDirectedGraph = () => {
   const svgRef = useRef(null);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
-
   // Fetch data from API
   useEffect(() => {
     const controller = new AbortController();
@@ -15,7 +13,7 @@ const ForceDirectedGraph = () => {
           signal: controller.signal,
         });
         const data = await response.json();
-
+        console.log("data is here ")
         if (data.status === "success") {
           const { groups, techniques } = data.data;
           const nodes = [];
