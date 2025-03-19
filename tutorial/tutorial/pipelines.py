@@ -659,11 +659,9 @@ class MySQLPipeline:
             if not mitigation_id :
              raise ValueError("Technique ID is missing or empty") 
             description = escape_string(item.get('Description'))
-            # refs = self.create_references(item.get('References'), mitigation_id, 'mitigation')
-           
+            # refs = self.create_references(item.get('References'), mitigation_id, 'mitigation')  
             # Sample text to test
             # Process the text
-   
             ner_type = "mitigations"
             doc = self.nlp(description)
             doc._.ner_type = ner_type
@@ -701,18 +699,16 @@ class MySQLPipeline:
             #         mitigation_entities[token.ent_type_].append(token.text)
 
             # Log the recognized entities for debugging
-
-
             print("Mitigation Entities:", mitigation_entities)
             # self.store_mitigation_entities(mitigation_id, mitigation_entities)
             mtigation_uri = f"<https://attack.mitre.org/mitigations/{mitigation_id}>"
             return f"""
             PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>
             INSERT DATA {{
-                ex:{mtigation_uri} a ex:mitigations ;
+                {mtigation_uri} a ex:mitigations ;
                     ex:mitigationName "{item.get('Mitigation')}" ;   
                     ex:description "{description}" ;
-                    ex:technique_implements_mitigations "{item.get("TechniqueId")}" .
+                    ex:technique_implements_mitigations ex:{item.get('TechniqueId')} .
             }}
             """
         except Exception as e:
