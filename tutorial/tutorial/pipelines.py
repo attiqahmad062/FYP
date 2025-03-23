@@ -700,7 +700,7 @@ class MySQLPipeline:
 
             # Log the recognized entities for debugging
             print("Mitigation Entities:", mitigation_entities)
-            # self.store_mitigation_entities(mitigation_id, mitigation_entities)
+            self.store_mitigation_entities(mitigation_id, mitigation_entities)
             mtigation_uri = f"<https://attack.mitre.org/mitigations/{mitigation_id}>"
             return f"""
             PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>
@@ -763,7 +763,7 @@ class MySQLPipeline:
             # Print extracted technique entities for debugging
             print(f"Extracted Procedure Entities: {detection_entities}")
             # Store the extracted entities into GraphDB via SPARQL queries
-            # self.store_detection_entities(detection_id, detection_entities)
+            self.store_detection_entities(detection_id, detection_entities)
             detection_uri = f"<https://attack.mitre.org/detections/{detection_id}>"
             return f""" 
             PREFIX ex: <{GRAPHDB_SETTINGS['prefix']}>

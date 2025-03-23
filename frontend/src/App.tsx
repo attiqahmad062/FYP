@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Tables from './pages/Tables';
 import Alerts from './pages/UiElements/Alerts';
+import ForceGraphPage  from './pages/ForceGraphPage';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
 
@@ -49,6 +50,15 @@ function App() {
             <>
               <PageTitle title="Calendar | TailAdmin - Tailwind CSS Admin Dashboard Template" />
               <Calendar />
+            </>
+          }
+        />
+        <Route
+          path="/force-graph"
+          element={
+            <>
+              <PageTitle title="Graph" />
+              <ForceGraphPage />
             </>
           }
         />

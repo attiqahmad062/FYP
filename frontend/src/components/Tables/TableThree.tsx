@@ -154,3 +154,198 @@ const TableThree = () => {
 };
 
 export default TableThree;
+
+
+// // export default ForceDirectedGraph;
+// import React, { useEffect, useState } from 'react';
+// import { ForceGraph2D } from 'react-force-graph';
+// import axios from 'axios';
+
+// // Define GraphVisualization component
+// const TableThree = () => {
+//   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   useEffect(() => {
+//     const fetchGraphData = async () => {
+//       try {
+//         setLoading(true);
+//         // Fetch data from Flask /all-entries endpoint
+//         const response = await axios.get('http://localhost:5001/all-entries');
+//         const data = response.data.data;
+
+//         // Prepare nodes and links
+//         const nodes = [];
+//         const links = [];
+//         const nodeSet = new Set();
+
+//         // Helper function to add nodes if not already added
+//         const addNode = (id, label, group) => {
+//           if (!nodeSet.has(id)) {
+//             nodes.push({ id, label, group });
+//             nodeSet.add(id);
+//           }
+//         };
+
+//         // Process groups
+//         data.groups.forEach(group => {
+//           addNode(group.id, group.name, 'group');
+//         });
+
+//         // Process techniques and their links to groups
+//         data.techniques.forEach(technique => {
+//           addNode(technique.id, technique.id, 'technique');
+//           technique.groups.forEach(groupUri => {
+//             const groupId = groupUri.split('/').pop(); // Extract GXXXX from URI
+//             if (nodeSet.has(groupId)) {
+//               links.push({ source: groupId, target: technique.id, label: 'uses' });
+//             }
+//           });
+//         });
+
+//         // Process campaigns and their links to groups
+//         data.campaigns.forEach(campaign => {
+//           addNode(campaign.id, campaign.name, 'campaign');
+//           const groupId = campaign.group.split('/').pop(); // Extract GXXXX
+//           if (nodeSet.has(groupId)) {
+//             links.push({ source: groupId, target: campaign.id, label: 'is_part_of' });
+//           }
+//         });
+
+//         // Process softwares and their links to groups
+//         data.softwares.forEach(software => {
+//           addNode(software.id, software.name, 'software');
+//           const groupId = software.group.split('/').pop(); // Extract GXXXX
+//           if (nodeSet.has(groupId)) {
+//             links.push({ source: groupId, target: software.id, label: 'uses' });
+//           }
+//         });
+
+//         // Process mitigations (no direct links in your data, so standalone nodes)
+//         data.mitigations.forEach(mitigation => {
+//           addNode(mitigation.id, mitigation.name, 'mitigation');
+//         });
+
+//         // Process procedures (no direct links, so standalone nodes)
+//         data.procedures.forEach(procedure => {
+//           addNode(procedure.name, procedure.name, 'procedure');
+//         });
+
+//         // Process detections (no direct links, so standalone nodes)
+//         data.detections.forEach(detection => {
+//           addNode(detection.id, detection.dataSource, 'detection');
+//         });
+
+//         // Set the graph data
+//         setGraphData({ nodes, links });
+//         setLoading(false);
+//       } catch (err) {
+//         console.error('Error fetching graph data:', err);
+//         setError('Failed to load graph data. Please check the server.');
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchGraphData();
+//   }, []);
+
+//   // Customize node appearance
+//   const nodeCanvasObject = (node, ctx, globalScale) => {
+//     const label = node.label || node.id;
+//     const fontSize = 12 / globalScale;
+//     ctx.font = `${fontSize}px Sans-Serif`;
+//     ctx.textAlign = 'center';
+//     ctx.textBaseline = 'middle';
+
+//     // Set node color based on group type
+//     switch (node.group) {
+//       case 'group':
+//         ctx.fillStyle = '#1E90FF'; // Blue
+//         break;
+//       case 'technique':
+//         ctx.fillStyle = '#FF4500'; // Red-Orange
+//         break;
+//       case 'campaign':
+//         ctx.fillStyle = '#32CD32'; // Green
+//         break;
+//       case 'software':
+//         ctx.fillStyle = '#8A2BE2'; // Purple
+//         break;
+//       case 'mitigation':
+//         ctx.fillStyle = '#FFA500'; // Orange
+//         break;
+//       case 'procedure':
+//         ctx.fillStyle = '#00CED1'; // Cyan
+//         break;
+//       case 'detection':
+//         ctx.fillStyle = '#FF69B4'; // Pink
+//         break;
+//       default:
+//         ctx.fillStyle = '#808080'; // Gray
+//     }
+
+//     // Draw node circle
+//     ctx.beginPath();
+//     ctx.arc(node.x, node.y, 6, 0, 2 * Math.PI, false);
+//     ctx.fill();
+
+//     // Draw label below node
+//     ctx.fillStyle = '#000000'; // Black text
+//     ctx.fillText(label, node.x, node.y + 10);
+//   };
+
+//   // Render loading, error, or graph
+//   if (loading) {
+//     return <div style={styles.loading}>Loading graph data...</div>;
+//   }
+
+//   if (error) {
+//     return <div style={styles.error}>{error}</div>;
+//   }
+
+//   return (
+//     <div style={styles.container}>
+//       <ForceGraph2D
+//         graphData={graphData}
+//         nodeLabel="label"
+//         nodeCanvasObject={nodeCanvasObject}
+//         nodeAutoColorBy="group"
+//         linkLabel="label"
+//         linkWidth={1.5}
+//         linkDirectionalArrowLength={4}
+//         linkDirectionalArrowRelPos={1}
+//         onNodeClick={node => alert(`Clicked: ${node.label} (${node.group})`)}
+//         width={window.innerWidth}
+//         height={window.innerHeight}
+//       />
+//     </div>
+//   );
+// };
+
+// // Basic styles
+// const styles = {
+//   container: {
+//     width: '100vw',
+//     height: '100vh',
+//     backgroundColor: '#f0f0f0',
+//   },
+//   loading: {
+//     display: 'flex',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     height: '100vh',
+//     fontSize: '18px',
+//     color: '#333',
+//   },
+//   error: {
+//     display: 'flex',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     height: '100vh',
+//     fontSize: '18px',
+//     color: '#ff0000',
+//   },
+// };
+
+// export default TableThree;
