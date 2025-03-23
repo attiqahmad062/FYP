@@ -594,7 +594,7 @@ def get_combined_entries():
             OPTIONAL { ?group ex:date ?date }
         }
         GROUP BY ?group ?groupId ?groupName ?alias ?associatedGroup ?description ?date
-        limit 1
+        limit 20
         """
 
         # Query 2: Get all techniques
@@ -607,7 +607,7 @@ def get_combined_entries():
             BIND(STRAFTER(STR(?technique), "https://attack.mitre.org/techniques/") AS ?techniqueId)
         }
         GROUP BY ?techniqueId ?groups
-        limit 1
+        limit 20
         """
 
         # Query 3: Get all campaigns
@@ -623,7 +623,7 @@ def get_combined_entries():
             OPTIONAL { ?campaign ex:campaignsLastseen ?lastSeen }
         }
         GROUP BY ?campaignId ?campaignName ?group ?firstSeen ?lastSeen
-        limit 1
+        limit 20
         """
 
         # Query 4: Get all mitigations
@@ -638,7 +638,7 @@ def get_combined_entries():
             BIND(STRAFTER(STR(?mitigation), "https://attack.mitre.org/mitigations/") AS ?mitigationId)
         }
         GROUP BY ?mitigationId ?mitigationName ?technique ?description
-        limit 1
+        limit 20
         """
 
         # Query 5: Get all softwares
@@ -654,7 +654,7 @@ def get_combined_entries():
             OPTIONAL { ?software ex:url ?url }
         }
         GROUP BY ?softwareId ?softwareName ?group ?techniques ?url
-        limit 1
+        limit 20
         """
 
         # Query 6: Get all procedures
@@ -668,7 +668,7 @@ def get_combined_entries():
             OPTIONAL { ?procedure ex:description ?description }
         }
         GROUP BY ?procedure ?procedureName ?technique ?description
-        limit 1
+        limit 20
         """
 
         # Query 7: Get all detections
@@ -684,7 +684,7 @@ def get_combined_entries():
             BIND(STRAFTER(STR(?detection), "https://attack.mitre.org/detections/") AS ?detectionId)
         }
         GROUP BY ?detectionId ?dataSource ?technique ?detects ?dataComponent
-        limit 1
+        limit 20
         """
 
         # Execute all SPARQL queries
