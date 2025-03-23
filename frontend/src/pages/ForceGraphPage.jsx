@@ -492,7 +492,9 @@ const GraphVisualization3D = () => {
         }
         const data = await response.json();
         setDataEntries(data);
+        console.log(data.data)
         setGraphData(generateData(data.data)); // Use existing generateData function
+       
       } catch (err) {
         setError(err.message);
       } finally {
@@ -507,34 +509,25 @@ const GraphVisualization3D = () => {
   // Generate cyber threat data
 
   
-    const generateData = (apiData) => {
-      const nodes = [];
-      const links = [];
-      const typeColors = {
-        group: '#FF6B6B',
-        campaign: '#4ECDC4',
-        technique: '#45B7D1',
-        software: '#96CEB4',
-        detection: '#FFEEAD',
-        mitigation: '#D4A5A5',
-        procedure: '#88B04B'
-      };
-
-      // Add Groups
-      apiData.groups.forEach(group => {
-        nodes.push({
-          id: group.id,
-          name: group.name,
-          type: 'group',
-          description: group.description,
-          color: typeColors.group
-        });
-      });
-
-      // Process Entities
-      const processEntity = (entity, type) => {
-        const nodeId = entity.id || entity.name;
-        
+  const generateData = (apiData) => {
+    const nodes = [];
+    const links = [];
+    const nodeSet = new Set(); // To track valid node IDs
+  
+    const typeColors = {
+      group: '#FF6B6B',
+      campaign: '#4ECDC4',
+      technique: '#45B7D1',
+      software: '#96CEB4',
+      detection: '#FFEEAD',
+      mitigation: '#D4A5A5',
+      procedure: '#88B04B'
+    };
+  
+    const addNode = (entity, type) => {
+      const nodeId = entity.id || entity.name;
+      if (!nodeSet.has(nodeId)) {
+        nodeSet.add(nodeId);
         nodes.push({
           id: nodeId,
           name: entity.name,
@@ -542,47 +535,39 @@ const GraphVisualization3D = () => {
           description: entity.description || `${type}: ${entity.name}`,
           color: typeColors[type]
         });
-
-        // Relationships
-        if (entity.group) {
-          links.push({ source: entity.group, target: nodeId });
-        }
-        if (entity.technique) {
-          links.push({ source: nodeId, target: entity.technique });
-        }
-        if (entity.techniques) {
-          entity.techniques.forEach(tech => {
-            links.push({ source: nodeId, target: tech });
-          });
-        }
-        if (entity.groups) {
-          entity.groups.forEach(groupId => {
-            links.push({ source: groupId, target: nodeId });
-          });
-        }
-      };
-
-      // Process all entities
-      apiData.campaigns.forEach(c => processEntity(c, 'campaign'));
-      apiData.techniques.forEach(t => processEntity(t, 'technique'));
-      apiData.softwares.forEach(s => processEntity(s, 'software'));
-      apiData.detections.forEach(d => processEntity(d, 'detection'));
-      apiData.mitigations.forEach(m => processEntity(m, 'mitigation'));
-      apiData.procedures.forEach(p => processEntity(p, 'procedure'));
-
-      // Remove duplicates
-      const uniqueNodes = nodes.filter((v,i,a) => 
-        a.findIndex(t => t.id === v.id) === i
-      );
-
-      // setGraphData({ nodes: uniqueNodes, links });
-      return { nodes: uniqueNodes, links };
+      }
     };
-
-   
-    
   
-  // Custom 3D node objects using SpriteText
+    apiData.groups.forEach(g => addNode(g, 'group'));
+    apiData.campaigns.forEach(c => addNode(c, 'campaign'));
+    apiData.techniques.forEach(t => addNode(t, 'technique'));
+    apiData.softwares.forEach(s => addNode(s, 'software'));
+    apiData.detections.forEach(d => addNode(d, 'detection'));
+    apiData.mitigations.forEach(m => addNode(m, 'mitigation'));
+    apiData.procedures.forEach(p => addNode(p, 'procedure'));
+  
+    // Validate links before adding them
+    const addLink = (source, target) => {
+      if (nodeSet.has(source) && nodeSet.has(target)) {
+        links.push({ source, target });
+      } else {
+        console.warn(`Skipping link: ${source} → ${target} (Node missing)`);
+      }
+    };
+  
+    // Link Techniques, Software, and Campaigns to Groups
+    apiData.campaigns.forEach(c => addLink(c.group, c.id));
+    apiData.techniques.forEach(t => t.groups?.forEach(g => addLink(g, t.id)));
+    apiData.softwares.forEach(s => addLink(s.group, s.id));
+  
+    // Link Procedures, Mitigations, and Detections to Techniques
+    apiData.procedures.forEach(p => addLink(p.technique, p.id));
+    apiData.mitigations.forEach(m => addLink(t.technique, m.id));
+    apiData.detections.forEach(d => addLink(d.group, d.id));
+    setGraphData({ nodes, links });
+    return { nodes, links };
+  };
+    // Custom 3D node objects using SpriteText
   const nodeThreeObject = useCallback(node => {
     // Create sphere
     const sphere = new THREE.Mesh(

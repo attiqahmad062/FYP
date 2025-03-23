@@ -583,18 +583,18 @@ def get_combined_entries():
         # Query 1: Get all groups
         groups_query = """
         PREFIX ex: <https://attack.mitre.org/>
-        SELECT ?groupId ?groupName ?alias ?associatedGroup ?description ?date
+        SELECT ?groupId ?groupName ?alias ?associatedGroup  ?date
         WHERE {
             ?group a ex:groups ;
                    ex:groupId ?groupId ;
                    ex:groupName ?groupName .
             OPTIONAL { ?group ex:alias ?alias }
             OPTIONAL { ?group ex:associatedGroups ?associatedGroup }
-            OPTIONAL { ?group ex:description ?description }
+            # OPTIONAL { ?group ex:description ?description }
             OPTIONAL { ?group ex:date ?date }
         }
-        GROUP BY ?group ?groupId ?groupName ?alias ?associatedGroup ?description ?date
-        limit 20
+        GROUP BY ?group ?groupId ?groupName ?alias ?associatedGroup  ?date
+        
         """
 
         # Query 2: Get all techniques
@@ -607,7 +607,7 @@ def get_combined_entries():
             BIND(STRAFTER(STR(?technique), "https://attack.mitre.org/techniques/") AS ?techniqueId)
         }
         GROUP BY ?techniqueId ?groups
-        limit 20
+       
         """
 
         # Query 3: Get all campaigns
@@ -623,22 +623,22 @@ def get_combined_entries():
             OPTIONAL { ?campaign ex:campaignsLastseen ?lastSeen }
         }
         GROUP BY ?campaignId ?campaignName ?group ?firstSeen ?lastSeen
-        limit 20
+       
         """
 
         # Query 4: Get all mitigations
         mitigations_query = """
         PREFIX ex: <https://attack.mitre.org/>
-        SELECT ?mitigationId ?mitigationName ?technique ?description
+        SELECT ?mitigationId ?mitigationName ?technique 
         WHERE {
             ?mitigation a ex:mitigations ;
                         ex:mitigationName ?mitigationName ;
                         ex:technique_implements_mitigations ?technique .
-            OPTIONAL { ?mitigation ex:description ?description }
+            # OPTIONAL { ?mitigation ex:description ?description }
             BIND(STRAFTER(STR(?mitigation), "https://attack.mitre.org/mitigations/") AS ?mitigationId)
         }
-        GROUP BY ?mitigationId ?mitigationName ?technique ?description
-        limit 20
+        GROUP BY ?mitigationId ?mitigationName ?technique 
+        
         """
 
         # Query 5: Get all softwares
@@ -654,37 +654,37 @@ def get_combined_entries():
             OPTIONAL { ?software ex:url ?url }
         }
         GROUP BY ?softwareId ?softwareName ?group ?techniques ?url
-        limit 20
+        
         """
 
         # Query 6: Get all procedures
         procedures_query = """
         PREFIX ex: <https://attack.mitre.org/>
-        SELECT ?procedure ?procedureName ?technique ?description
+        SELECT ?procedure ?procedureName ?technique 
         WHERE {
             ?procedure a ex:procedures ;
                        ex:technique_implements_procedures ?technique ;
                        ex:procedureName ?procedureName .
-            OPTIONAL { ?procedure ex:description ?description }
+            # OPTIONAL { ?procedure ex:description ?description }
         }
-        GROUP BY ?procedure ?procedureName ?technique ?description
-        limit 20
+        GROUP BY ?procedure ?procedureName ?technique 
+        
         """
 
         # Query 7: Get all detections
         detections_query = """
         PREFIX ex: <https://attack.mitre.org/>
-        SELECT ?detectionId ?dataSource ?technique ?detects ?dataComponent
+        SELECT ?detectionId ?dataSource ?technique  ?dataComponent
         WHERE {
             ?detection a ex:detections ;
                         ex:technique_implements_detections ?technique ;
                         ex:dataSource ?dataSource .
-            OPTIONAL { ?detection ex:detects ?detects }
+            # OPTIONAL { ?detection ex:detects ?detects }
             OPTIONAL { ?detection ex:dataComponent ?dataComponent }
             BIND(STRAFTER(STR(?detection), "https://attack.mitre.org/detections/") AS ?detectionId)
         }
-        GROUP BY ?detectionId ?dataSource ?technique ?detects ?dataComponent
-        limit 20
+        GROUP BY ?detectionId ?dataSource ?technique  ?dataComponent
+        
         """
 
         # Execute all SPARQL queries
@@ -704,7 +704,7 @@ def get_combined_entries():
                 "name": str(row.groupName),
                 "alias": str(row.alias) if row.alias else None,
                 "associatedGroup": str(row.associatedGroup) if row.associatedGroup else None,
-                "description": str(row.description) if row.description else None,
+                # "description": str(row.description) if row.description else None,
                 "date": str(row.date) if row.date else None,
             })
 
@@ -734,7 +734,7 @@ def get_combined_entries():
                 "id": str(row.mitigationId),
                 "name": str(row.mitigationName),
                 "technique": str(row.technique) if row.technique else None,
-                "description": str(row.description) if row.description else None,
+                # "description": str(row.description) if row.description else None,
             })
 
         # Process softwares into a list of dictionaries
@@ -754,7 +754,7 @@ def get_combined_entries():
             procedures.append({
                 "name": str(row.procedureName),
                 "technique": str(row.technique) if row.technique else None,
-                "description": str(row.description) if row.description else None,
+                # "description": str(row.description) if row.description else None,
             })
 
         # Process detections into a list of dictionaries
@@ -764,7 +764,7 @@ def get_combined_entries():
                 "id": str(row.detectionId),
                 "dataSource": str(row.dataSource),
                 "technique": str(row.technique) if row.technique else None,
-                "detects": str(row.detects) if row.detects else None,
+                # "detects": str(row.detects) if row.detects else None,
                 "dataComponent": str(row.dataComponent) if row.dataComponent else None,
             })
 
